@@ -1,0 +1,31 @@
+# Video Processing Worker Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install FFmpeg for video transcoding
+RUN apk add --no-cache ffmpeg && \
+    npm config set fund=false && \
+    npm config set progress=false
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies including devDependencies for FFmpeg
+RUN npm ci
+
+# Copy application code
+COPY . .
+
+# Create uploads directory
+RUN mkdir -p uploads/hls/1080p uploads/hls/720p uploads/hls/480p uploads/hls/360p
+
+# Expose port (not needed for worker, but good practice)
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
+
+# Start worker
+CMD ["npm", "worker"]
