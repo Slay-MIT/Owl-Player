@@ -1,7 +1,7 @@
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.4-alpine
     environment:
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev}
@@ -30,14 +30,14 @@ services:
     volumes:
       - miniodata:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "-n", "local"]
+      test: ["CMD", "mc", "ready", "local"]
       interval: 30s
       timeout: 5s
       retries: 5
 
   # RabbitMQ Message Queue
   rabbitmq:
-    image: rabbitmq:3-management-alpine
+    image: rabbitmq:3.13-management-alpine
     ports:
       - "5672:5672"  # AMQP
       - "15672:15672"  # Management UI
@@ -70,7 +70,7 @@ services:
       minio:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./api/uploads:/app/uploads
 
