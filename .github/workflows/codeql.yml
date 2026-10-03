@@ -1,0 +1,51 @@
+name: CodeQL Security Analysis
+
+on:
+  push:
+    # branches:
+    #   - main
+    #   - develop
+  schedule:
+    # Run weekly on Sunday at 00:00 UTC
+    - cron: '0 0 * * 0'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - javascript
+          # Add other languages if needed (e.g., 'python', 'java')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      # Autobuild attempts to build the compiled project
+      # Note: Not all projects are supported. For manual builds, use the 'codeql/codeql-action/autobuild' action.
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      # ℹ️ Command-line programs to run using the OS shell.
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:${{matrix.language}}
