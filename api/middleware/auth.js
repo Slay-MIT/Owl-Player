@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 
-// Middleware to verify JWT token and attach user info to request
-exports.verifyToken = (req, res, next) => {
+// Default middleware function for router.use()
+const authMiddleware = (req, res, next) => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -48,9 +48,16 @@ exports.verifyToken = (req, res, next) => {
   }
 };
 
-// Admin-only middleware
-exports.isAdmin = (req, res, next) => {
+// Admin-only middleware function
+const adminMiddleware = (req, res, next) => {
   // For now, we'll assume any authenticated user is an admin
   // In production, you'd check a role field in the database
   next();
+};
+
+module.exports = {
+  authMiddleware,
+  adminMiddleware: adminMiddleware,
+  verifyToken: authMiddleware,
+  isAdmin: adminMiddleware
 };

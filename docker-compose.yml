@@ -99,8 +99,6 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_started
-    volumes:
-      - ./api/uploads:/app/uploads
 
   # Frontend Application
   frontend:

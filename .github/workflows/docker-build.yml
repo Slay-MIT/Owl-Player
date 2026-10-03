@@ -5,25 +5,19 @@ on:
     branches:
       - main
       - develop
-    tags:
-      - "v*"
   pull_request:
     branches:
       - main
       - develop
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME_API: ${{ github.repository }}/api
-  IMAGE_NAME_FRONTEND: ${{ github.repository }}/frontend
+
 
 jobs:
   # Build and push API Docker image
-  build-api:
+  stack-health:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
@@ -38,7 +32,7 @@ jobs:
             unhealthy=$(docker compose ps --format json | jq -r 'select(.Health=="unhealthy") | .Name')
             starting=$(docker compose ps --format json | jq -r 'select(.Health=="starting") | .Name')
             if [-n "$unhealthy"]; then echo "Unhealthy Services: $unhealthy"; exit 1; fi
-            if [-n "$starting"]; then echo "All Healthy, Starting Services: $starting"; exit 0; fi
+            if [-z "$starting"]; then echo "All Healthy, Starting Services: $starting"; exit 0; fi
             sleep 10
 
           done
@@ -48,6 +42,6 @@ jobs:
         run: docker compose logs
         
       - name: Stop Services
-        if: failure()
+        if: always()
         run: docker compose down -v
         

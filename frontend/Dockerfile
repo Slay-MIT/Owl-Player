@@ -7,13 +7,18 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# Create necessary directories
+RUN mkdir -p .next/static
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
+# Build the application with clean cache
+RUN rm -rf .next/cache && \
+    npm run build
 
 # Production image
 FROM node:20-alpine
@@ -26,6 +31,10 @@ COPY package*.json ./
 # Copy built application from builder
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./static
+COPY --from=builder /app/public ./public
+
+# Create uploads directory if it doesn't exist
+RUN mkdir -p uploads
 
 # Expose port
 EXPOSE 3000
